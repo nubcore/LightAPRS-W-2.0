@@ -25,6 +25,10 @@
 #endif
 #include "ZeroAPRS.h"
 
+#if defined(ARDUINO_ARCH_RP2040)
+#include "hardware/pwm.h"
+#endif
+
 typedef struct {
   char CALL[7];
   char DST[7];
@@ -87,10 +91,12 @@ const static uint8_t sinusTable[512] PROGMEM = {128, 129, 131, 132, 134, 135, 13
                                                 103, 104, 106, 107, 109, 110, 112, 114, 115, 117, 118, 120, 121, 123, 124, 126};
 
 void APRS_init() {
+#if defined(ARDUINO_ARCH_SAMD)
   while (DAC->STATUS.bit.SYNCBUSY);
   DAC->DATA.reg = 0; //DAC out 0
   while (DAC->STATUS.bit.SYNCBUSY);
   DAC->CTRLA.bit.ENABLE = 0x01; //DAC Enable
+#endif
   APRS_tcConfigure(13200);
   sinusPtr = 0;
   countPtr = 0;
@@ -289,12 +295,24 @@ void APRS_send_bit(int tempo)
   while (countPtr < tempo) {}
 }
 
+#if defined(ARDUINO_ARCH_RP2040)
+#define PLL_CALCULATION_PRECISION   4
+void vfo_set_freq_x16(uint8_t clk_number, uint32_t freq);
+#endif
 void APRS_sinus()
 {
   ddsAccu = ddsAccu + ddsWord;
   sinusPtr = ddsAccu >> 23;
+#if defined(ARDUINO_ARCH_SAMD)
   while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY);
   DAC->DATA.reg = pgm_read_byte(&(sinusTable[sinusPtr]))*gain;
+#elif defined(ARDUINO_ARCH_RP2040)
+  //KZT set freq to Si5351
+  extern uint8_t aprs_si5351_clk_port;
+  extern uint32_t GEOFENCE_APRS_frequency;
+  // sinusTable[n] is between 1 and 254, - 128 = -127 and 126
+  vfo_set_freq_x16(aprs_si5351_clk_port, ((GEOFENCE_APRS_frequency + ((int32_t)pgm_read_byte(&(sinusTable[sinusPtr])) - 128L) * gain * 4) << PLL_CALCULATION_PRECISION));
+#endif
   countPtr++;
 }
 
@@ -358,9 +376,13 @@ void APRS_sendpacket()
   fcsflag = 0;
   flag = 1;
   for (i = 0; i < tailFlag; i++) APRS_sendbyte(0x7E);	  //Sends 30 flag bytes  
+#if defined(ARDUINO_ARCH_SAMD)
   analogWrite(A0, 0);
+#endif
   APRS_tcDisable();
 }
+
+#if defined(ARDUINO_ARCH_SAMD)
 /********************************************************
    Timer 5
  ********************************************************/
@@ -368,9 +390,24 @@ void TC5_Handler (void) {
   APRS_sinus();
   TC5->COUNT16.INTFLAG.bit.MC0 = 1;
 }
+#elif defined(ARDUINO_ARCH_RP2040)
+/********************************************************
+   PWM5
+ ********************************************************/
+
+#define APRS_PWM_SLICE_NUM  5
+
+static pwm_config aprs_pwm_config;
+
+void PWM5_Handler(void) {
+  APRS_sinus();
+  pwm_clear_irq(APRS_PWM_SLICE_NUM);
+}
+#endif
 
 void APRS_tcConfigure(int sampleRate)
 {
+#if defined(ARDUINO_ARCH_SAMD)
   GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)) ;
   while (GCLK->STATUS.bit.SYNCBUSY);
 
@@ -389,28 +426,57 @@ void APRS_tcConfigure(int sampleRate)
 
   TC5->COUNT16.INTENSET.bit.MC0 = 1;
   while (APRS_tcIsSyncing()); 
+#elif defined(ARDUINO_ARCH_RP2040)
+  static const uint32_t SystemCoreClock = 125000000;
+  aprs_pwm_config = pwm_get_default_config();
+  pwm_config_set_clkdiv(&aprs_pwm_config, 1.f);
+  pwm_config_set_wrap(&aprs_pwm_config, (SystemCoreClock / sampleRate - 1));
+  pwm_init(APRS_PWM_SLICE_NUM, &aprs_pwm_config, false);
+#endif
 }
 
 bool APRS_tcIsSyncing()
 {
+#if defined(ARDUINO_ARCH_SAMD)
   return TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY;
+#elif defined(ARDUINO_ARCH_RP2040)
+  return false;
+#endif
 }
 
 void APRS_tcStartCounter()
 {
+#if defined(ARDUINO_ARCH_SAMD)
   TC5->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;
   while (APRS_tcIsSyncing()); 
+#elif defined(ARDUINO_ARCH_RP2040)
+  irq_set_exclusive_handler(PWM_IRQ_WRAP, PWM5_Handler);
+  irq_set_enabled(PWM_IRQ_WRAP, true);
+  pwm_clear_irq(APRS_PWM_SLICE_NUM);
+  pwm_set_irq_enabled(APRS_PWM_SLICE_NUM, true);
+  pwm_set_enabled(APRS_PWM_SLICE_NUM, true);
+#endif
 }
 
+#if defined(ARDUINO_ARCH_SAMD)
 void APRS_tcReset()
 {
   TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
   while (APRS_tcIsSyncing());
   while (TC5->COUNT16.CTRLA.bit.SWRST);
 }
+#endif
 
 void APRS_tcDisable()
 {
+#if defined(ARDUINO_ARCH_SAMD)
   TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
   while (APRS_tcIsSyncing());
+#elif defined(ARDUINO_ARCH_RP2040)
+  pwm_set_enabled(APRS_PWM_SLICE_NUM, false);
+  pwm_set_irq_enabled(APRS_PWM_SLICE_NUM, false);
+  pwm_clear_irq(APRS_PWM_SLICE_NUM);
+  irq_set_enabled(PWM_IRQ_WRAP, false);
+  irq_remove_handler(PWM_IRQ_WRAP, PWM5_Handler);
+#endif
 }
