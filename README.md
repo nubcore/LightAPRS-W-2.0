@@ -1,116 +1,121 @@
-# LightAPRS-W 2.0 WSPR Tracker
+# LightAPRS-W-2.0 ported to sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1
 
-LightAPRS-W 2.0 is an affordable, smallest, lightest, powerful and open source APRS tracker with WSPR. It makes tracking pico balloons simple and easy. 
-It is able to report location, altitude, temperature and pressure to the internet ([APRS-IS](http://status.aprs2.net)) or direct to an amateur radio once a minute with a solar panel/supercapacitors or just 3xAAA batteries. 
-Because LightAPRS W-2.0 is open source you can add your own custom sensors via I2C/SPI pins.
+[This branch](https://github.com/kaduhi/LightAPRS-W-2.0/tree/port_to_ag6ns_rp2040_picoballoon_tracker) is a ported version of [LightAPRS-W-2.0](https://github.com/lightaprs/LightAPRS-W-2.0) for [sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1](https://github.com/kaduhi/sf-hab_rp2040_picoballoon_tracker_pcb_gen1).
 
-<img src="images/lightaprs-w-2-0-front-back-small.jpg" width="800">
+[sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1](https://github.com/kaduhi/sf-hab_rp2040_picoballoon_tracker_pcb_gen1) is an open-hardware project indended for STEM (Science, Technology, Engineering and Mathematics) educational purposes.
 
-**LightAPRS-W 2.0** is upgraded (smaller, lighter, powerful but power consumption is lower) version of [LightAPRS-W 1.0](https://github.com/lightaprs/LightAPRS-W-1.0). We don't use Dorji DRA818V radio module for VHF (APRS) any more and developed our own VHF radio module and that made LightAPRS-W-2.0 smaller and lighter. DRA818V radio module was very powerful (1 Watt) but actually pico balloon trackers do not need 1 Watt since it draws so much power. Our new VHF Radio module for APRS (based on Si4463) is 100 mWatt and more convenient for airborne projects since power consumption is much much lower.
+## Differences
 
-<img src="images/light-aprs-w-comparison-table2.png" width="800">
+There are several differences between **LightAPRS-W 2.0 Tracker** and **sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1**
 
-LightAPRS-W 2.0 is available on http://shop.qrp-labs.com/aprs/lightaprsw2 for order. If you don't need WSPR, than check out APRS only tracker [LightAPRS](https://github.com/lightaprs/LightAPRS-1.0) or LoRa/LoRaWAN only tracker [LightTracker](https://github.com/lightaprs/LightTracker-1.0).
+- Weight: 4.61 g -> 3.94 g (3.57 g after cut-out USB connector portion, with GPS antenna wires)
+- Size: 32 mm x 55 mm -> 29 mm x 55 mm (48 mm after cut-out USB connector portion)
+- MCU: Microchip ATSAMD21G18 -> Raspberry Pi RP2040
+- Flash: 256 KB (internal) -> 2 MB (external)
+- RAM: 32 KB -> 264 KB
+- MCU Clock Freq.: 48 MHz -> 125 MHz
+- VHF Radio Module: Si4463 (Max 100 mWatt) -> Si5351A-B-GT/MS5351M (Max 10 mWatt)
+- HF Radio Module: Si5351A-B-GT (Max 10mWatt) -> Si5351A-B-GT/MS5351 (Max 10 mWatt)
 
-<img src="images/lightaprs-w-2-0-pinout.png" width="600">
+The original LightAPRS-W 2.0 tracker uses two different chips (Si5351A and Si4463) for supporting both HF and VHF bands, but my ported version only uses the Si5351A-B-GT/MS5351M to generate both HF (WSPR in 20m band) and VHF (APRS in 2m band).
 
-**Important :** LightAPRS-W 2.0 uses the amateur 2 meter (VHF) and 10m+ (HF) radio band which requires an amateur radio license to operate.
- 
-## Basic Features 
-- **Software** : Open Source
-- **Weight** : 4.61 grams
-- **Dimensions**    : 32 mm x 55 mm
-- **IDE** : Arduino
-- **Platform** : ARM Cortex-M0 (Arduino M0)
-- **MCU** : ATSAMD21G18
-- **Flash** : 256 KB
-- **Ram** : 32 kB
-- **EEPROM** : N/A
-- **Operating Frequency** : 48 Mhz
-- **Operating Voltage** : 3.3 Volt
-- **Input Voltage** : 2.7 (min) - 6 (max) Volt via USB or VBat pin (Buck-Boost regulator with power good)
-- **BOD** : N/A
-- **Sensor** : BMP180 (pressure and temperature)
-- **VHF Radio Module** : Si4463 (included)
-- **VHF Radio Operating Frequency** : 144-146 MHz (configurable by code)
-- **VHF Low Pass Filter** : Available (7 elements)
-- **VHF Radio Power**  : 100 mW (max) (configurable by software)
-- **VHF Power Consumption (TX)** : ~55 mA (100 mW)
-- **HF Radio Module** : [Si5351A-B-GT](https://www.silabs.com/products/timing/clocks/cmos-clock-generators/device.si5351a-b-gt) (included)
-- **HF Radio Operating Frequency** : 2.5kHz - 200Mhz (configurable by code)
-- **HF Low Pass Filter** : No
+The source code for controlling the Si5351A/MS5351M chip is ported from my [AFSK_to_FSK_VFO](https://github.com/kaduhi/AFSK_to_FSK_VFO) repository, it was developed originally for [**QRPGuys AFP-FSK Digital Transceiver III kit**](https://qrpguys.com/qrpguys-digital-fsk-transceiver-iii) ( [source code](https://qrpguys.com/wp-content/uploads/2022/09/ft8_v1.4_092522-1.zip) ).
 
-<img src="images/lightaprs-w-si5351_clck_out.png" width="500">
+## How to compile & build the source code
 
-- **HF Radio Power**  : ~10mW
-- **CPU Power Consumption (Idle)** : ~7 mA
-- **GPS** : Ublox MAX-M8Q (GPS-GLONASS)
-- **GPS Antenna Gain** : 4.3 dBi
-- **Extended Pins** : I2C, SPI, 2x Analog
+Same as the LightAPRS-W-2.0, you need to use [Arduino IDE](https://www.arduino.cc/en/Main/Software) to compile & build this project.
 
-<img src="images/lightaprs-w-2-0-weight.jpg" width="600">
+### 1. Install Arduino IDE
 
-## Configuration
+Download and install [Arduino IDE](https://www.arduino.cc/en/Main/Software). If you have already installed Arduino, please check for updates. Its version should be at least v2.3.1 or newer.
 
-To programme LightAPRS-W 2.0 Tracker, all you need is a micro usb (B type) cable, a few installations and configurations.
+### 2. Configure Board
 
-### 1.Install Arduino IDE
-
-Download and install [Arduino IDE](https://www.arduino.cc/en/Main/Software). If you have already installed Arduino, please check for updates. Its version should be at least v1.8.13 or newer.
-
-### 2.Configure Board
-
-- Open the **Tools > Board > Boards Manager...** menu item as follows:
-
-![image](https://user-images.githubusercontent.com/48382675/135890740-df30ddd3-ee2b-42b7-bc90-b30240cf5ee3.png)
-
-- Type "Arduino SAMD" in the search bar until you see the **Arduino SAMD Boards (32-Bits Arm Cortex-M0+)** entry and click on it.
-
-![image](https://user-images.githubusercontent.com/48382675/135891280-ad4eb226-dc00-4ff9-8332-a57fa986d16f.png)
-
+- Open the **Tools > Board > Boards Manager...** menu item.
+- Type "raspberry pi pico" in the search bar until you see the **Raspberry Pi Pico/RP2040** entry and click on it.
+  - For more details about the **Raspberry Pi Pico/RP2040**, please refer to [Arduino-Pico documentation](https://arduino-pico.readthedocs.io/en/latest/index.html).
+  - If you use Arduino IDE v1.*, please refer to [here](https://arduino-pico.readthedocs.io/en/latest/install.html#installing-via-arduino-boards-manager).
 - Click **Install** .
 - After installation is complete, close the **Boards Manager** window.
-- Open the **Tools > Board** menu item and select **Arduino SAMD Boards (32-Bits Arm Cortex-M0+) -> Arduino M0** from the the list as follows:
+- Open the **Tools > Board** menu item and select **Raspberry Pi Pico/RP2040 -> Raspberry Pi Pico** from the the list.
+- Open the **Tools** menu again to select values below:
+  - Debug Level: "None"
+  - Debug Port: "Serial"
+  - C++ Exceptions: "Disabled"
+  - Flash Size: "2MB (no FS)"
+  - CPU Speed: "125MHz"
+  - IP/Bluetooth Stack: "IPv4 Only"
+  - Optimize: "Small (-Os) (standard)"
+  - RTTI: "Disabled"
+  - Stack Protection: "Disabled"
+  - Upload Method: "Default (UF2)"
+  - USB Stack: "Pico SDK"
 
-![image](https://user-images.githubusercontent.com/48382675/135892579-8fb214f0-07ad-485d-9aba-d51d7acf9a16.png)
+### 3. Copy Libraries & Compile Source Code 
 
-### 3.Copy Libraries & Compile Source Code 
-
-You are almost ready to programme LightAPRS-W 2.0 Tracker :)
-
-- First download the repository to your computer using the green "[clone or download](https://github.com/lightaprs/LightAPRS-W-2.0/archive/refs/heads/main.zip)" button.
-- There are more than one Arduino projects optimized for different use cases. For example if you are planning to use the LightAPRS-W-2.0 tracker for a pico balloon project, then use the "[LightAPRS-W-2-pico-balloon](LightAPRS-W-2-pico-balloon)" folder.
+- First download the repository to your computer using the green "[clone or download](https://github.com/kaduhi/LightAPRS-W-2.0/archive/refs/heads/port_to_ag6ns_rp2040_picoballoon_tracker.zip)" button.
+- There are only one Arduino projects "[LightAPRS-W-2-pico-balloon](LightAPRS-W-2-pico-balloon)" folder.
 - You will notice some folders in the "libraries" folder. You have to copy these folders (libraries) into your Arduino libraries folder on your computer. Path to your Arduino libraries:
 - **Windows** : This PC\Documents\Arduino\libraries\
-- **Mac** : /Users/\<username\>/Documents/Arduino/libraries/ <img src="images/lightaprs-library-copy.png" width="600">
+- **Mac** : /Users/\<username\>/Documents/Arduino/libraries/
 
-**IMPORTANT :** LightAPRS-W 2.0 uses additional libraries than LightAPRS and LightAPRS-W. So if you purchased LightAPRS or LightAPRS-W and copied libraries before, do it again for LightAPRS-W 2.0. Otherwise you get a compile error.
+**IMPORTANT :** If you already have folders that have same name, you still need to overwrite them. Otherwise you get a compile error.
 
-- Then open the *.ino file with Arduino IDE and change your settings (Callsign, SSID, comment, etc.)
+- Then open the LightAPRS-W-2-pico-balloon.ino file with Arduino IDE and change your settings (Callsign, SSID, comment, etc.)
 - Click **Verify** (If you get compile errors, check the steps above)
 
-<img width="468" alt="image" src="https://user-images.githubusercontent.com/48382675/192628201-8b7449dc-74b6-4869-8e89-a8d5a3fbbcb8.png">
-
-### 4.Upload
+### 4. Upload
 
 - First attach an VHF antenna (at least 50cm monopole wire) to your tracker. Radio module may be damaged when not attaching an antenna, since power has nowhere to go. 
-- Connect LightAPRS-W 2.0 Tracker to your computer with a micro USB cable, then you should see a COM port under **Tools->Port** menu item. Select that port. 
-
-![image](https://user-images.githubusercontent.com/48382675/135892815-b129bd92-1d88-41e3-a943-dd61bd19f3e9.png)
-
+- Connect sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1 board to your computer with a micro USB cable, then you should see a COM port under **Tools->Port** menu item. Select that port. (e.g. "/dev/cu.usbmodem141101")
 - Click **Upload**
+- If you see an error, you may need to put the tracker board into "Bootloader" mode before uploading:
+  - Disconnect the USB cable
+  - While shorting the H5 (two thru-hole next to the USB connector, maybe with pins or tweezers), connect the USB cable
+  - After your PC recognized the board, release the shorting
 
-<img width="450" alt="image" src="https://user-images.githubusercontent.com/48382675/192628583-506afff6-b083-46d5-8a81-53030c1da8fb.png">
+## Questions?
 
-- Your tracker is ready to launch :)
+I will only answer questions from people who are a part of a STEM education program (student, teacher, mentor, advisor, ...), please send them via email (*my call sign* @ arrl.net).
+The answers to these questions will also be added to the [Wiki](https://github.com/kaduhi/sf-hab_rp2040_picoballoon_tracker_pcb_gen1/wiki) for the benefit of all other STEM education groups.
 
-<img src="images/lightaprs-w-2-0-payload-test.png" width="600">
+**Note:** ***I will most likely ignore all emails from people who are not part of a STEM education program. If you are not a part of a STEM education program, please do not waste your time sending any questions.***
 
-### Support
+## Project Background and History
+**Oct 2021** - attend to [SF-HAB (San Francisco Bay Area High Altitude Balloon) group](https://sf-hab.org/)'s Amateur Radio Pico Balloon presentation at Pacificon 2021, then joined the group
 
-If you have any questions or need support, please contact support@lightaprs.com
+**Dec 2021** - start writing firmware for existing W6MRR V6.6 Pico Balloon Tracker boards
 
-### Wiki
+**Oct 2022** - at Pacificon 2022, meet a group of people from San Diego doing Pico Balloon / Ocean Buoy STEM educational programs for local high school students. They are looking for a new Tracker board that is specialized for their STEM education programs. They mentioned about the idea of using RP2040 as a controller chip, run tracker software in 1st CPU Core and MicroPython in 2nd Core for students to customize / extend the tracker functionalities. The tracker should be open source and open hardware, and not expensive
 
-* **[F.A.Q.](https://github.com/lightaprs/LightAPRS-W-2.0/wiki/F.A.Q.)**
-* **[Tips & Tricks for Pico Balloons](https://github.com/lightaprs/LightAPRS-W-2.0/wiki/Tips-&-Tricks-for-Pico-Balloons)**
+**Jan 2023** - during a SF-HAB online meeting, I was assigned to design a RP2040 based next generation Pico Balloon Tracker board
+
+**Jan 2023** - start designing a tracker board
+
+**Feb 2023** - order and receive the v0.1 prototype boards
+
+**Mar 2023** - update design, order and receive the v0.2 prototype boards
+
+**Apr 2023** - launch the v0.2 tracker [AG6NS-11](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=AG6NS-11&q=AG6NS-11) from Hayward California, flown for 12 days then stop working above Iran
+
+**May 2023** - launch another v0.2 tracker [K6EAU-11](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=K6EAU-11&q=K6EAU-11) from Milpitas California, flown for 77.9 days (2.7 circumnavigations)
+
+**May 2023** - update design, order and receive the v0.3 prototype boards
+
+**Jun 2023** - launch the v0.3 tracker [W6MRR-27](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=W6MRR-27&q=W6MRR-27) from Milpitas California, flown for 1.5 days (accumulated ice destroyed the balloon? altitude dropped from 13km to 3km during night, then slowly back to 13km)
+
+**Jun 2023** - launch another v0.3 tracker [AG6NS-12](https://amateur.sondehub.org/#!mt=Mapnik&mz=11&qm=366d&f=AG6NS-12&q=AG6NS-12) from Milpitas California, flown for 1 day
+
+**Jul 2023** - launch another v0.3 tracker [AG6NS-13](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=AG6NS-13&q=AG6NS-13) from Milpitas California, flown for 1 day (balloon failure, landed in Mexico then keep transmitting signal for 3 days)
+
+**Jul 2023** - update design, order and receive the v0.3.1 prototype boards
+
+**Sep 2023** - launch the v0.3.1 tracker [AG6NS-14](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=AG6NS-14&q=AG6NS-14) from Milpitas, California, flown for 1 day (balloon failure, landed near Mono Lake then keep transmitting signal for 53 days)
+
+**Oct 2023** - launch another v0.3.1 tracker [AG6NS-15](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=AG6NS-15&q=AG6NS-15) from Milpitas California, as of Mar 27 2024 still flying for 171 days and completed 16.8 circumnavigations
+
+#
+
+Kazuhisa "Kazu." Terasaki, AG6NS
+
+if you are insterested in, [here](https://www.instagram.com/kazuterasaki/) is my latest updates
