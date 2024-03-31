@@ -2,22 +2,27 @@
 
 [This branch](https://github.com/kaduhi/LightAPRS-W-2.0/tree/port_to_ag6ns_rp2040_picoballoon_tracker) is a ported version of [LightAPRS-W-2.0](https://github.com/lightaprs/LightAPRS-W-2.0) for [sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1](https://github.com/kaduhi/sf-hab_rp2040_picoballoon_tracker_pcb_gen1).
 
-[sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1](https://github.com/kaduhi/sf-hab_rp2040_picoballoon_tracker_pcb_gen1) is an open-hardware project indended for STEM (Science, Technology, Engineering and Mathematics) educational purposes.
+[sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1](https://github.com/kaduhi/sf-hab_rp2040_picoballoon_tracker_pcb_gen1) is an open-hardware project intended for STEM (Science, Technology, Engineering and Mathematics) educational purposes.
 
 ## Differences
 
-There are several differences between **LightAPRS-W 2.0 Tracker** and **sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1**
+There are several differences between **LightAPRS-W 2.0 Tracker** and **sf-hab.org RP2040 based PicoBalloon Tracker PCB generation 1**:
 
-- Weight: 4.61 g -> 3.94 g (3.57 g after cut-out USB connector portion, with GPS antenna wires)
-- Size: 32 mm x 55 mm -> 29 mm x 55 mm (48 mm after cut-out USB connector portion)
-- MCU: Microchip ATSAMD21G18 -> Raspberry Pi RP2040
-- Flash: 256 KB (internal) -> 2 MB (external)
-- RAM: 32 KB -> 264 KB
-- MCU Clock Freq.: 48 MHz -> 125 MHz
-- VHF Radio Module: Si4463 (Max 100 mWatt) -> Si5351A-B-GT/MS5351M (Max 10 mWatt)
-- HF Radio Module: Si5351A-B-GT (Max 10mWatt) -> Si5351A-B-GT/MS5351 (Max 10 mWatt)
+|   |LightAPRS-W 2.0 Tracker|sf-hab.org RP2040 based Tracker gen1|
+|---|---|---|
+|**Weight**|4.61 g|3.94 g (3.57 g after cut-out USB connector portion, with GPS antenna wires)|
+|**Size**|32 mm x 55 mm|29 mm x 55 mm (48 mm after cut-out USB connector portion)|
+|**MCU**|Microchip ATSAMD21G18 (ARM Cortex-M0)|Raspberry Pi RP2040 (ARM Cortex-M0+ dual core)|
+|**Flash**|256 KB (internal)|2 MB (external)|
+|**RAM**|32 KB|264 KB|
+|**MCU Clock Freq.**|48 MHz|125 MHz|
+|**VHF Radio Module**|Si4463 (Max 100 mWatt)|Si5351A-B-GT / MS5351M (Max 10 mWatt)|
+|**VHF LPF**|Available (7 elements)|5 elements (separate from HF LPF)|
+|**HF Radio Module**|Si5351A-B-GT (Max 10mWatt)|Si5351A-B-GT / MS5351 (Max 10 mWatt)|
+|**HF LPF**|No|5 elements (separate from VHF LPF)|
+|**Sensor**|BMP180 (pressure and temperature)|BMP280 (pressure and temperature)|
 
-The original LightAPRS-W 2.0 tracker uses two different chips (Si5351A and Si4463) for supporting both HF and VHF bands, but my ported version only uses the Si5351A-B-GT/MS5351M to generate both HF (WSPR in 20m band) and VHF (APRS in 2m band).
+The original LightAPRS-W 2.0 Tracker uses two different chips (Si5351A and Si4463) for supporting both HF and VHF bands, but my ported version only uses the Si5351A-B-GT/MS5351M to generate both HF (WSPR in 20m band) and VHF (APRS in 2m band).
 
 The source code for controlling the Si5351A/MS5351M chip is ported from my [AFSK_to_FSK_VFO](https://github.com/kaduhi/AFSK_to_FSK_VFO) repository, it was developed originally for [**QRPGuys AFP-FSK Digital Transceiver III kit**](https://qrpguys.com/qrpguys-digital-fsk-transceiver-iii) ( [source code](https://qrpguys.com/wp-content/uploads/2022/09/ft8_v1.4_092522-1.zip) ).
 
@@ -110,9 +115,13 @@ The answers to these questions will also be added to the [Wiki](https://github.c
 
 **Jul 2023** - update design, order and receive the v0.3.1 prototype boards
 
+**Aug 2023** - launch another v0.3 tracker [WB6TOU-14](http://lu7aa.org/wsprx.asp?banda=20m&other=wb6tou&balloonid=q8&timeslot=8&repito=on&wide=&detail=&SSID=14&launch=20230808170001&tracker=wb8elk) from Lodi California, as of Mar 30 2024 **still flying for 234 days.** It requires high sun angle due to the tiny single solar cell therefore reports are limited during winter.
+
 **Sep 2023** - launch the v0.3.1 tracker [AG6NS-14](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=AG6NS-14&q=AG6NS-14) from Milpitas, California, flown for 1 day (balloon failure, landed near Mono Lake then keep transmitting signal for 53 days)
 
-**Oct 2023** - launch another v0.3.1 tracker [AG6NS-15](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=AG6NS-15&q=AG6NS-15) from Milpitas California, as of Mar 27 2024 still flying for 171 days and completed 16.8 circumnavigations
+**Oct 2023** - launch another v0.3.1 tracker [AG6NS-15](https://amateur.sondehub.org/#!mt=Mapnik&mz=8&qm=366d&f=AG6NS-15&q=AG6NS-15) from Milpitas California, as of Mar 30 2024 **still flying for 174 days and completed 16.8 circumnavigations**
+
+**Nov 2023** - release an **Ocean Buoy** with the v0.3 tracker [KQ6RS-12](https://aprs.fi/#!call=a%2FKQ6RS-12&timerange=604800&tail=604800) at 420 miles WSW of San Diego California (from a boat), as of Mar 30 2024 **still floating on Pacific Ocean for 144 days**
 
 #
 
