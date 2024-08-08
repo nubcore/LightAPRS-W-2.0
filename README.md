@@ -36,7 +36,9 @@ Download and install [Arduino IDE](https://www.arduino.cc/en/Main/Software). If 
 
 ### 2. Configure Board
 
-- Open the **Tools > Board > Boards Manager...** menu item.
+- Open **Preferences** and click button for "Additional Board Manager URLs"
+  - Add <code>https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json</code>
+-  Open the **Tools > Board > Boards Manager...** menu item.
 - Type "raspberry pi pico" in the search bar until you see the **Raspberry Pi Pico/RP2040** entry and click on it.
   - For more details about the **Raspberry Pi Pico/RP2040**, please refer to [Arduino-Pico documentation](https://arduino-pico.readthedocs.io/en/latest/index.html).
   - If you use Arduino IDE v1.*, please refer to [here](https://arduino-pico.readthedocs.io/en/latest/install.html#installing-via-arduino-boards-manager).
